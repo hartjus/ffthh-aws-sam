@@ -10,6 +10,18 @@ Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
+  #
+  # SQS
+  #
+  ffthhSamSQSjhart:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ffthhSamSQSjhart
+
+  #
+  # LAMBDAS
+  #
+
   # This is a Lambda function config associated with the source code: get-all-items.js
   getAllItemsFunction:
     Type: AWS::Serverless::Function
@@ -94,6 +106,32 @@ Resources:
           Type: Api
           Properties:
             Path: /
+            Method: POST
+
+  putSqsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/put-sqs.putSqsHandler
+      Runtime: nodejs20.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP post method to add one item to
+        an SQS queue.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+      - SQSSendMessagePolicy:
+          QueueName: !GetAtt ffthhSamSQSjhart.QueueName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          SQSqueueName: !Ref ffthhSamSQSjhart
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /sqs
             Method: POST
   # Simple syntax to create a DynamoDB table with a single attribute primary key, more in
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesssimpletable
